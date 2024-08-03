@@ -239,7 +239,7 @@ class Factorio(World):
         for ingredient in self.multiworld.max_science_pack[self.player].get_allowed_packs():
             location = world.get_location(f"Automate {ingredient}", player)
 
-            if self.multiworld.recipe_ingredients[self.player]:
+            if self.multiworld.science_ingredients[self.player]:
                 custom_recipe = self.custom_recipes[ingredient]
 
                 location.access_rule = lambda state, ingredient=ingredient, custom_recipe=custom_recipe: \
@@ -262,8 +262,13 @@ class Factorio(World):
         silo_recipe = None
         if self.multiworld.silo[self.player] == Silo.option_spawn:
             silo_recipe = self.custom_recipes["rocket-silo"] if "rocket-silo" in self.custom_recipes \
-                else next(iter(all_product_sources.get("rocket-silo")))
-        part_recipe = self.custom_recipes["rocket-part"]
+                else next(iter(all_product_sources.get("rocket-silo"))) 
+        part_recipe = None
+        if self.multiworld.rocket_ingredients[self.player]:
+            part_recipe = self.custom_recipes["rocket-part"]
+        else:
+            part_recipe = next(iter(all_product_sources.get("rocket-part")))
+            
         satellite_recipe = None
         if self.multiworld.goal[self.player] == Goal.option_satellite:
             satellite_recipe = self.custom_recipes["satellite"] if "satellite" in self.custom_recipes \
@@ -443,16 +448,19 @@ class Factorio(World):
 
     def set_custom_recipes(self):
         ingredients_offset = self.multiworld.recipe_ingredients_offset[self.player]
+        self.custom_recipes = {}
+
         original_rocket_part = recipes["rocket-part"]
         science_pack_pools = get_science_pack_pools()
-        valid_pool = sorted(science_pack_pools[self.multiworld.max_science_pack[self.player].get_max_pack()] & valid_ingredients)
-        self.multiworld.random.shuffle(valid_pool)
-        self.custom_recipes = {"rocket-part": Recipe("rocket-part", original_rocket_part.category,
-                                                     {valid_pool[x]: 10 for x in range(3 + ingredients_offset)},
-                                                     original_rocket_part.products,
-                                                     original_rocket_part.energy)}
+        if self.multiworld.rocket_ingredients[self.player]:
+            valid_pool = sorted(science_pack_pools[self.multiworld.max_science_pack[self.player].get_max_pack()] & valid_ingredients)
+            self.multiworld.random.shuffle(valid_pool)
+            self.custom_recipes["rocket-part"] = Recipe("rocket-part", original_rocket_part.category,
+                                                        {valid_pool[x]: 10 for x in range(3 + ingredients_offset)},
+                                                        original_rocket_part.products,
+                                                        original_rocket_part.energy)
 
-        if self.multiworld.recipe_ingredients[self.player]:
+        if self.multiworld.science_ingredients[self.player]:
             valid_pool = []
             for pack in self.multiworld.max_science_pack[self.player].get_ordered_science_packs():
                 valid_pool += sorted(science_pack_pools[pack])

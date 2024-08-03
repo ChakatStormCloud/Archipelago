@@ -192,11 +192,19 @@ class Progressive(Choice):
         return random.choice([True, False]) if self.value == self.option_grouped_random else bool(self.value)
 
 
-class RecipeIngredients(Choice):
-    """Select if rocket, or rocket + science pack ingredients should be random."""
-    display_name = "Random Recipe Ingredients Level"
-    option_rocket = 0
-    option_science_pack = 1
+class RocketIngredients(Choice):
+    """Select if rocket ingredients should be randomised"""
+    display_name = "Random Rocket Parts"
+    option_vanilla = 0
+    option_randomize_recipe = 1
+    default = 1
+
+class ScienceIngredients(Choice):
+    """Select if science pack ingredients should be random."""
+    display_name = "Random Science Recipe"
+    option_vanilla = 0
+    option_randomize_recipe = 1
+    default = 0
 
 
 class RecipeIngredientsOffset(Range):
@@ -439,7 +447,8 @@ factorio_options: typing.Dict[str, type(Option)] = {
     "free_sample_blacklist": FactorioFreeSampleBlacklist,
     "free_sample_whitelist": FactorioFreeSampleWhitelist,
     "recipe_time": RecipeTime,
-    "recipe_ingredients": RecipeIngredients,
+    "rocket_ingredients": RocketIngredients,
+    "science_ingredients": ScienceIngredients,
     "recipe_ingredients_offset": RecipeIngredientsOffset,
     "imported_blueprints": ImportedBlueprint,
     "world_gen": FactorioWorldGen,
